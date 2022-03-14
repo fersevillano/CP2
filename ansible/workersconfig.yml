@@ -1,0 +1,17 @@
+- hosts: "workers"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Abrimos los puertos del firewall
+       shell: |
+               sudo firewall-cmd --zone=public --permanent --add-port={10250/tcp,30000-32767/tcp}
+               sudo firewall-cmd --reload
+
+     - name: Nos unimos al cluster
+       shell: |
+               sudo kubeadm join vm-master:6443 --token hrattz.wcpoar9vbrb4i7qt --discovery-token-ca-cert-hash sha256:d00066f89f8903d6521df3258b48d14c7ff92988923ad3e6f8c4fbd5bd73cc4e

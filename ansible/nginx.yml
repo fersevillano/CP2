@@ -1,0 +1,20 @@
+- hosts: "master"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Vamos a crear un deployment y un servicio de nginx
+       shell: |
+               sudo kubectl create deployment nginx --image=nginx
+               sudo kubectl create service nodeport nginx --tcp=80:80
+
+     - name: Mostramos los servicios de kubernetes
+       command: "sudo kubectl get svc"
+       register: output
+
+     - name: debug
+       debug: msg="{{ output.stdout }}"

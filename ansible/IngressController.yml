@@ -1,0 +1,13 @@
+- hosts: "master"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Aplicamos el ingress controller para poder acceder a los pods
+       shell: |
+               sudo kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/master/deploy/haproxy-ingress.yaml
+

@@ -1,0 +1,24 @@
+- hosts: "master"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Se crea el namespace para el NFS
+       shell: |
+               sudo kubectl create namespace webapp-volumes
+
+     - name: Se crea el almacenamiento
+       shell: |
+               sudo kubectl apply -f /home/ansible/CP2/ansible/Mappedvolume/nfs-pv.yaml
+
+     - name: Se crea el volumen para poder asignarlo a un pod
+       shell: |
+               sudo kubectl apply -f /home/ansible/CP2/ansible/Mappedvolume/nfs-pvc.yaml
+
+     - name: Tiramos el fichero para crear la carga de trabajo
+       shell: |
+               sudo kubectl apply -f /home/ansible/CP2/ansible/Mappedvolume/volumes.yaml

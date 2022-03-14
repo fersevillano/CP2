@@ -1,0 +1,28 @@
+- hosts: "master, workers, nfs"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Actualizamos todo en las máquinas
+       shell: |
+               sudo dnf update -y
+
+     - name: Tareas previas a la configuracion
+       shell: |
+               sudo timedatectl set-timezone Europe/Madrid
+               sudo dnf install chrony -y
+               sudo systemctl enable chronyd
+               sudo systemctl start chronyd
+               sudo timedatectl set-ntp true
+
+     - name: Desactivamos SELinux
+       shell: |
+               sudo sed -i s/=enforcing/=disabled/g /etc/selinux/config
+
+     - name: Instalamos paquetes para acceder al ser ver NFS
+       shell: |
+               sudo dnf install nfs-utils nfs4-acl-tools wget -y

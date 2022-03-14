@@ -1,0 +1,46 @@
+- hosts: "nfs"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Instalamos la app NFS y la habilitamos
+       shell: |
+               sudo dnf install nfs-utils net-tools -y
+               sudo systemctl enable nfs-server
+               sudo systemctl start nfs-server
+
+     - name: Creamos la carpeta que compartiremos
+       shell: |
+               sudo mkdir /srv/nfs
+
+     - name: Creamos la configuracion del server
+       file:
+         path: "/etc/exports"
+         state: "touch"
+
+     - name: Añadimos la informacion al fichero
+       blockinfile:
+         path: "/etc/exports"
+         block: |
+                # master
+                /srv/nfs	vm-master(rw,sync)
+                # worker01
+                /srv/nfs        vm-worker01(rw,sync)
+                # master
+                /srv/nfs        vm-worker02(rw,sync)
+
+     - name: Aplicamos la configuración
+       shell: |
+               sudo exportfs -r
+               sudo exportfs -s
+
+     - name: Creamos las reglas del firewall
+       shell: |
+               sudo firewall-cmd --permanent --add-service=nfs
+               sudo firewall-cmd --permanent --add-service=rpc-bind
+               sudo firewall-cmd --permanent --add-service=mountd
+               sudo firewall-cmd --reload

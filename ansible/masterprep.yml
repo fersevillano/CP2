@@ -1,0 +1,53 @@
+- hosts: "master"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Añadimos las reglas del firewall
+       shell: |
+               sudo firewall-cmd --permanent --add-port=6443/tcp
+               sudo firewall-cmd --permanent --add-port=2379-2380/tcp
+               sudo firewall-cmd --permanent --add-port=10250-10252/tcp
+               sudo firewall-cmd --permanent --add-port=10255/tcp
+               sudo firewall-cmd --reload
+
+     - name: Configuramos kubeadm
+       shell: |
+               sudo kubeadm config images pull
+
+     - name: Permitimos el aceso a los workers
+       shell: |
+               sudo firewall-cmd --permanent --add-rich-rule 'rule family=ipv4 source address=51.13.119.144/32 accept'
+               sudo firewall-cmd --permanent --add-rich-rule 'rule family=ipv4 source address=51.13.162.111/32 accept'
+               sudo firewall-cmd --reload
+
+     - name: Activamos el CNI y definimos la red interna de los PODs
+       shell: |
+               sudo kubeadm init --pod-network-cidr 192.169.0.0/16
+               register: salidacomando
+
+     - name: debug
+       debug: msg="{{ salidacomando.stdout }}"
+
+     - name: Configuramos kubectl para su uso en root
+       shell: |
+               sudo export KUBECONFIG=/etc/kubernetes/admin.conf
+
+     - name: Autorizamos root para que pueda acceder al cluster
+       shell: |
+               sudo mkdir -p /root/.kube
+               sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+               sudo chown $(id -u):$(id -g) /root/.kube/config
+
+     - name: Comprobamos que ha funcionado
+       shell: |
+               sudo kubectl get nodes
+               register: salidacomando2
+
+     - name: debug
+       debug: msg="{{ salidacomando2.stdout }}"
+

@@ -1,0 +1,15 @@
+- hosts: "master, workers, nfs"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Activamos el firewall
+       shell: |
+               sudo systemctl enable firewalld
+               sudo systemctl start firewalld
+               sudo firewall-cmd --permanent --add-service=ssh
+               sudo firewall-cmd --reload

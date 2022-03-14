@@ -1,0 +1,17 @@
+- hosts: 'workers, master'
+  become: yes
+
+  tasks:
+    - name: Creacion de la cuenta de kubernetes
+      user: name=k8suser append=yes state=present createhome=yes shell=/bin/bash
+
+    - name: Hacer que pueda usar comandos elevados
+      lineinfile:
+        dest: /etc/sudoers
+        line: 'k8suser ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Permitir conectarse con clave publica
+      authorized_key: user=k8suser key="{{item}}"
+      with_file:
+        - ~/.ssh/id_rsa.pub

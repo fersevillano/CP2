@@ -1,0 +1,14 @@
+- hosts: "master, workers"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Añadimos al firewall las reglas del SDN
+       shell: |
+               sudo firewall-cmd --permanent --add-port=8285/udp
+               sudo firewall-cmd --permanent --add-port=8472/udp
+               sudo firewall-cmd --reload

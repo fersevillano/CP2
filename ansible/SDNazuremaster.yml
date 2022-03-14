@@ -1,0 +1,12 @@
+- hosts: "master"
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: yes
+  connection: ssh
+
+  tasks:
+     - name: Aplicamos el fichero canal.yml
+       shell: |
+               sudo kubectl apply -f https://docs.projectcalico.org/manifests/canal.yaml
