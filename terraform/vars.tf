@@ -1,9 +1,3 @@
-variable "location" {
-  type    = string
-  description = "Región donde crearemos la infraestructura"
-  default = "Norway East"
-}
-
 variable "vm_size" {
   type    = string
   description = "Tamaño de la máquina virtual, en este caso 3.5GB de ram y 1 CPU"
